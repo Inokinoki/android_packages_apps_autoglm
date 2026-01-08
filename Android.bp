@@ -28,6 +28,12 @@ android_app {
         "org.lineageos.platform.internal",
     ],
 
+    // To enable Local LLM with NCNN/ONNX:
+    // jni_libs: ["libllm_agent_jni"],
+    
+    // For now, we are not compiling the JNI lib in this environment as NDK/headers are likely missing.
+    // So we keep it commented out to avoid build failure.
+    
     libs: ["telephony-common"],
 
     required: ["privapp_whitelist_org.lineageos.setupwizard"],
