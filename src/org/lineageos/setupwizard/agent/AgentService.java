@@ -12,7 +12,12 @@ import org.lineageos.setupwizard.agent.llm.LLMClient;
 import org.lineageos.setupwizard.agent.llm.LocalLLMClient;
 import org.lineageos.setupwizard.agent.llm.RemoteLLMClient;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 public class AgentService extends Service {
     private static final String TAG = "AgentService";
@@ -53,9 +58,13 @@ public class AgentService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "AgentService started");
         
-        // In a real scenario, we might wait for a specific broadcast or user action.
-        // For testing, let's start listening immediately.
-        startListening();
+        if (intent != null && "org.lineageos.setupwizard.agent.ACTION_TRIGGER".equals(intent.getAction())) {
+            Log.d(TAG, "Trigger action received via intent");
+            mHandler.post(this::simulateUserRequest);
+        } else {
+             // Default behavior
+             startListening();
+        }
 
         return START_STICKY;
     }
@@ -89,11 +98,35 @@ public class AgentService extends Service {
             Log.e(TAG, "Screen capture failed (null)");
         }
 
-        // 2. Send to LLM (Simulated Prompt: "Click the settings button")
+        // 2. Capture UI Hierarchy
+        String uiJson = "[]";
+        if (AgentAccessibilityService.getInstance() != null) {
+            List<AgentAccessibilityService.UiNode> nodes = AgentAccessibilityService.getInstance().getUiHierarchy();
+            try {
+                JSONArray jsonArray = new JSONArray();
+                for (AgentAccessibilityService.UiNode node : nodes) {
+                    JSONObject obj = new JSONObject();
+                    obj.put("text", node.text);
+                    obj.put("class", node.className);
+                    obj.put("desc", node.contentDescription);
+                    obj.put("bounds", node.bounds.toShortString());
+                    obj.put("clickable", node.isClickable);
+                    jsonArray.put(obj);
+                }
+                uiJson = jsonArray.toString();
+                Log.d(TAG, "UI Hierarchy captured: " + nodes.size() + " nodes");
+            } catch (JSONException e) {
+                Log.e(TAG, "Failed to serialize UI hierarchy", e);
+            }
+        } else {
+            Log.w(TAG, "Accessibility Service not connected");
+        }
+
+        // 3. Send to LLM (Simulated Prompt: "Click the settings button")
         String prompt = "I see the screen. Please click the settings button.";
         
         if (imageBytes != null) {
-             mLLMClient.processImage(imageBytes, prompt, new LLMClient.Callback() {
+             mLLMClient.processHybrid(imageBytes, uiJson, prompt, new LLMClient.Callback() {
                  @Override
                  public void onResponse(String text) {
                      handleLLMResponse(text);

@@ -9,4 +9,5 @@ public interface LLMClient {
     void processInput(String prompt, Callback callback);
     void processAudio(byte[] audioData, Callback callback);
     void processImage(byte[] imageData, String prompt, Callback callback);
+    void processHybrid(byte[] imageData, String uiHierarchyJson, String prompt, Callback callback);
 }

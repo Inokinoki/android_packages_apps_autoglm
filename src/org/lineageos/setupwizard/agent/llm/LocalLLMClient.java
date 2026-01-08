@@ -40,4 +40,9 @@ public class LocalLLMClient implements LLMClient {
     public void processImage(byte[] imageData, String prompt, Callback callback) {
         // ...
     }
+
+    @Override
+    public void processHybrid(byte[] imageData, String uiHierarchyJson, String prompt, Callback callback) {
+        // ...
+    }
 }

@@ -41,4 +41,18 @@ public class RemoteLLMClient implements LLMClient {
         Log.d(TAG, "Sending image to remote LLM");
         // VLM logic
     }
+
+    @Override
+    public void processHybrid(byte[] imageData, String uiHierarchyJson, String prompt, Callback callback) {
+        Log.d(TAG, "Sending Hybrid (Image + UI Tree) to remote LLM");
+        // VLM + Text logic
+        new Thread(() -> {
+            try {
+                Thread.sleep(1500);
+                callback.onResponse("I see the screen with " + uiHierarchyJson.length() + " chars of UI tree. Executing action.");
+            } catch (InterruptedException e) {
+                callback.onError(e);
+            }
+        }).start();
+    }
 }
