@@ -12,6 +12,12 @@ android {
         targetSdk 34
         versionCode 5
         versionName "1.0"
+        
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+            }
+        }
     }
 
     sourceSets {
@@ -21,6 +27,13 @@ android {
             res.srcDirs = ['res']
             aidl.srcDirs = ['src']
             assets.srcDirs = ['assets']
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/jni/CMakeLists.txt"
+            version "3.10.2"
         }
     }
 
